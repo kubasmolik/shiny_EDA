@@ -24,10 +24,21 @@ shinyUI(
                     
                     ## load data
                     fileInput(
-                        id = "file_input",
-                        label = "Choose .RData file",
-                        accept = "Rdata"
+                        inputId = "file_input",
+                        label = "Choose .CSV file",
+                        accept = c("text/csv",
+                                   "text/comma-separated-values,text/plain",
+                                   ".csv")
                     ),
+                    
+                    ## input the separator sign
+                    textInput(
+                        inputId = "separator",
+                        label = "Put in the separator sign",
+                        value = ","
+                    ),
+                    
+                    actionButton("choice", "incorporate external information"),
                     
                     ## select Y variable
                     selectInput(
@@ -45,8 +56,14 @@ shinyUI(
                     
                     ## select predictor type
                     radioButtons(
-                        inputId = ""
+                        inputId = "target_type",
+                        label = "Select target type",
+                        choices = c("binary", "numeric")
                     )
+                    
+                ),
+                mainPanel(
+                    dataTableOutput("dane")
                     
                 )
             )

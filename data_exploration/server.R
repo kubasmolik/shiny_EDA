@@ -10,17 +10,35 @@
 library(shiny)
 
 # Define server logic required to draw a histogram
-shinyServer(function(input, output) {
+shinyServer(function(input, output, session) {
    
-  output$distPlot <- renderPlot({
+    # df <- reactive({
+    #     req(input$file_input, input$separator)
+    #     data.table::fread(file = input$file_input$datapath,
+    #                       stringsAsFactors = F,
+    #                       sep = input$separator)
+    #     })
+    df <- eventReactive(input$choice, {
+            req(input$file_input, input$separator)
+            df_raw <- data.table::fread(file = input$file_input$datapath,
+                              stringsAsFactors = F,
+                              sep = input$separator)
+            vars <- names(df_raw)
+            updateSelectInput(session,
+                              inputId = "target",
+                              label = "Select target variable",
+                              choices = vars)
+            updateSelectInput(session,
+                              inputId = "var_name",
+                              label = "Select predictor variable",
+                              choices = vars)
+            df_raw
+        
+    })
     
-    # generate bins based on input$bins from ui.R
-    x    <- faithful[, 2] 
-    bins <- seq(min(x), max(x), length.out = input$bins + 1)
-    
-    # draw the histogram with the specified number of bins
-    hist(x, breaks = bins, col = 'darkgray', border = 'white')
-    
-  })
+    output$dane <- renderDataTable({
+        
+        df()
+    })
   
 })
