@@ -18,7 +18,7 @@ shinyServer(function(input, output, session) {
     #                       stringsAsFactors = F,
     #                       sep = input$separator)
     #     })
-    df <- eventReactive(input$choice, {
+    df <- eventReactive(input$upload, {
             req(input$file_input, input$separator)
             df_raw <- data.table::fread(file = input$file_input$datapath,
                               stringsAsFactors = F,
@@ -37,8 +37,11 @@ shinyServer(function(input, output, session) {
     })
     
     output$dane <- renderDataTable({
-        
-        df()
+        df() %>% head(100)
+    })
+    
+    output$cols <- renderText({
+        capture.output(str(df())) %>% stringr::str_c(collapse = "\n") 
     })
   
 })

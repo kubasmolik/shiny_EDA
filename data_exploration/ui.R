@@ -1,13 +1,22 @@
 #
-
+## check for packages
+if(!("DescTools" %in% installed.packages()))    install.packages("DescTools")
+if(!("RColorBrewer" %in% installed.packages())) install.packages("RColorBrewer")
+if(!("dplyr" %in% installed.packages()))        install.packages("dplyr")
+if(!("ggplot2" %in% installed.packages()))      install.packages("ggplot2")
+if(!("rlang" %in% installed.packages()))        install.packages("rlang")
+if(!("nortest" %in% installed.packages()))      install.packages("nortest")
+if(!("scales" %in% installed.packages()))       install.packages("scales")
+if(!("plotly" %in% installed.packages()))       install.packages("plotly")
+if(!("markdown" %in% installed.packages()))     install.packages("markdown")
 
 library(dplyr)
 library(tidyr)
 library(ggplot2)
-library(plotly)
 library(DT)
 library(shiny)
 library(markdown)
+library(DescTools)
 
 # Define UI for application that draws a histogram
 shinyUI(
@@ -21,6 +30,8 @@ shinyUI(
                 
                 ## sidebar
                 sidebarPanel(
+                    
+                    tags$h2("Load data"),
                     
                     ## load data
                     fileInput(
@@ -38,7 +49,14 @@ shinyUI(
                         value = ","
                     ),
                     
-                    actionButton("choice", "incorporate external information"),
+                    ## action button to upload the file
+                    actionButton(
+                        inputId = "upload", 
+                        label = "Upload file"),
+                    
+                    tags$hr(),
+                    
+                    tags$h2("Select variables"),
                     
                     ## select Y variable
                     selectInput(
@@ -63,6 +81,9 @@ shinyUI(
                     
                 ),
                 mainPanel(
+                    
+                    tags$h2("Data Overview"),
+                    
                     dataTableOutput("dane")
                     
                 )
