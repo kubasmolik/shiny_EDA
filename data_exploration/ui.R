@@ -1,5 +1,8 @@
-#
-## check for packages
+#------------------------------------------------------------------------------#
+####                            UI SCRIPT                                   ####
+#------------------------------------------------------------------------------#
+
+## check for installed packages
 if(!("DescTools" %in% installed.packages()))    install.packages("DescTools")
 if(!("RColorBrewer" %in% installed.packages())) install.packages("RColorBrewer")
 if(!("dplyr" %in% installed.packages()))        install.packages("dplyr")
@@ -10,6 +13,7 @@ if(!("scales" %in% installed.packages()))       install.packages("scales")
 if(!("plotly" %in% installed.packages()))       install.packages("plotly")
 if(!("markdown" %in% installed.packages()))     install.packages("markdown")
 
+## load packages
 library(dplyr)
 library(tidyr)
 library(ggplot2)
@@ -18,12 +22,15 @@ library(shiny)
 library(markdown)
 library(DescTools)
 
-# Define UI for application that draws a histogram
+#------------------------------------------------------------------------------#
+####                            Define UI                                   ####
+#------------------------------------------------------------------------------#
+
 shinyUI(
     navbarPage(
         title = "Exploratory data analysis", 
         
-        ## Load data
+        #### Load data ####
         tabPanel(
             title = "Load data",
             sidebarLayout(
@@ -83,15 +90,66 @@ shinyUI(
                 mainPanel(
                     
                     tags$h2("Data Overview"),
-                    
                     dataTableOutput("dane")
                     
                 )
             )
+        ),
+        
+        #### Variable Description ####
+        tabPanel(
+            title = "Variable Description",
+            
+            sidebarLayout(
+                
+                sidebarPanel(
+                    
+                    ## logarithm the variable or not
+                    checkboxInput(
+                        inputId = "log_dummy",
+                        label = "Log transformation",
+                        value = FALSE
+                    ),
+                    
+                    ## remove outliers or not
+                    checkboxInput(
+                        inputId = "outlier_dummy",
+                        label = "Remove outliers",
+                        value = FALSE
+                    ),
+                    
+                    ## outlier definition
+                    numericInput(
+                        inputId = "outlier_def",
+                        label = "Outlier definition - # of sd from the mean",
+                        value = 3,
+                        min = 2,
+                        max = 6,
+                        step = 1
+                    ),
+                    
+                    ## number of bins in histogram
+                    sliderInput(
+                        inputId = "bins",
+                        label = "Select number of bins",
+                        value = 30,
+                        min = 10,
+                        max = 50,
+                        step = 1
+                    )
+                ),
+                
+                mainPanel(
+                    
+                    fluidRow(
+                        tags$h2("Descriptive statistics"),
+                        
+                        verbatimTextOutput("summary")
+                    )
+                )
+                
+            )
+            
         )
     )
-    
-    
-    
-    
 )

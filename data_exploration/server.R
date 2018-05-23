@@ -1,29 +1,24 @@
-#
-# This is the server logic of a Shiny web application. You can run the 
-# application by clicking 'Run App' above.
-#
-# Find out more about building applications with Shiny here:
-# 
-#    http://shiny.rstudio.com/
-#
+#------------------------------------------------------------------------------#
+####                          SERVER SCRIPT                                 ####
+#------------------------------------------------------------------------------#
 
 library(shiny)
 
-# Define server logic required to draw a histogram
+#------------------------------------------------------------------------------#
+####                          Define SERVER                                 ####
+#------------------------------------------------------------------------------#
+
 shinyServer(function(input, output, session) {
    
-    # df <- reactive({
-    #     req(input$file_input, input$separator)
-    #     data.table::fread(file = input$file_input$datapath,
-    #                       stringsAsFactors = F,
-    #                       sep = input$separator)
-    #     })
-    df <- eventReactive(input$upload, {
+    #### REACTIVES ####
+    
+    ## df_raw
+    df_raw <- eventReactive(input$upload, {
             req(input$file_input, input$separator)
-            df_raw <- data.table::fread(file = input$file_input$datapath,
+            df_0 <- data.table::fread(file = input$file_input$datapath,
                               stringsAsFactors = F,
                               sep = input$separator)
-            vars <- names(df_raw)
+            vars <- names(df_0)
             updateSelectInput(session,
                               inputId = "target",
                               label = "Select target variable",
@@ -32,16 +27,70 @@ shinyServer(function(input, output, session) {
                               inputId = "var_name",
                               label = "Select predictor variable",
                               choices = vars)
-            df_raw
-        
+            df_0
     })
+    
+    ## df_base
+    df_base <- reactive({
+        req(input$var_name, input$target)
+        
+        df_raw() %>%
+            select(rlang::UQ(as.name(input$var_name)), 
+                   rlang::UQ(as.name(input$target))) 
+    })
+    
+    ## df
+    df <- reactive({
+        # req(input$log_dummy, input$outlier_dummy, input$outlier_def)
+        
+        ## calculate min to enable applying logarithm
+        df_base() %>%
+            select(rlang::UQ(as.name(input$var_name))) %>%
+            min(na.rm = T) -> min_x
+        
+        df_temp <- df_base()
+        
+        ## change names to simplify code
+        names(df_temp) <- c("x", "y")
+        df_temp$x <- as.numeric(df_temp$x)
+        
+        ## if log_dummy == T then apply logarithm
+        if(input$log_dummy){
+            if(min_x <= 0){
+                df_temp %>%
+                    mutate(x = log(x + min_x + 1)) %>% 
+                    select(x, y) -> df_temp
+            } else {
+                df_temp %>%
+                    mutate(x = log(x)) %>% 
+                    select(x, y) -> df_temp
+            }
+        }
+        
+        ## if outlier_dummy == T then remove outliers according to definition
+        if(input$outlier_dummy){
+            df_temp %>%
+                mutate(x_scaled = as.numeric(scale(x))) %>%
+                filter(abs(x_scaled) <= input$outlier_def) %>%
+                select(- x_scaled) -> df_temp
+        }
+        
+        ## fix the names
+        names(df_temp) <- c(input$var_name, input$target)
+        
+        df_temp
+    })
+    
+    #### OUTPUTS ####
     
     output$dane <- renderDataTable({
-        df() %>% head(100)
+        df_raw() %>% head(100)
     })
     
-    output$cols <- renderText({
-        capture.output(str(df())) %>% stringr::str_c(collapse = "\n") 
+    output$summary <- renderPrint({
+        df() %>%
+            select(rlang::UQ(as.name(input$var_name))) %>%
+            DescTools::Desc(plotit = F)
     })
   
 })
