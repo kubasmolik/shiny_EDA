@@ -8,6 +8,10 @@ library(shiny)
 ####                          Define SERVER                                 ####
 #------------------------------------------------------------------------------#
 
+# load("./dane.RData")
+# source("./data_exploration/plot_histogram.R")
+source("./plot_histogram.R")
+
 shinyServer(function(input, output, session) {
    
     #### REACTIVES ####
@@ -91,6 +95,28 @@ shinyServer(function(input, output, session) {
         df() %>%
             select(rlang::UQ(as.name(input$var_name))) %>%
             DescTools::Desc(plotit = F)
+    })
+    
+    output$hist_plot <- renderPlotly({
+        
+        df() %>%
+            select(rlang::UQ(as.name(input$var_name))) %>%
+            summarise_all(mean) %>%
+            .[[1]] -> mean_x
+        
+        df() %>%
+            select(rlang::UQ(as.name(input$var_name))) %>%
+            summarise_all(sd) %>%
+            .[[1]] -> sd_x
+        
+        plot_histogram(df = df(), 
+                       var_name = input$var_name, 
+                       bins_num = input$bins, 
+                       mean_x = mean_x, 
+                       sd_x = sd_x, 
+                       title = paste0("Histogram of ", input$var_name)
+                       ) -> plot_1
+        plotly::ggplotly(plot_1)
     })
   
 })

@@ -102,7 +102,7 @@ shinyUI(
             
             sidebarLayout(
                 
-                sidebarPanel(
+                sidebarPanel(width = 2,
                     
                     ## logarithm the variable or not
                     checkboxInput(
@@ -145,6 +145,13 @@ shinyUI(
                         tags$h2("Descriptive statistics"),
                         
                         verbatimTextOutput("summary")
+                    ),
+                    fluidRow(
+                        tags$h2("Histogram & boxplot"),
+                        
+                        column(width = 6, 
+                               plotlyOutput("hist_plot")),
+                        column(width = 4)
                     )
                 )
                 
