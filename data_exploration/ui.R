@@ -144,14 +144,16 @@ shinyUI(
                     fluidRow(
                         tags$h2("Descriptive statistics"),
                         
-                        verbatimTextOutput("summary")
+                        verbatimTextOutput("summary"),
+                        tags$br()
                     ),
                     fluidRow(
                         tags$h2("Histogram & boxplot"),
                         
                         column(width = 6, 
                                plotlyOutput("hist_plot")),
-                        column(width = 4)
+                        column(width = 4,
+                               plotlyOutput("box_plot"))
                     )
                 )
                 

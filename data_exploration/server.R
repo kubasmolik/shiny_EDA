@@ -119,4 +119,22 @@ shinyServer(function(input, output, session) {
         plotly::ggplotly(plot_1)
     })
   
+    output$box_plot <- renderPlotly({
+        
+        df() %>%
+            select(rlang::UQ(as.name(input$var_name))) %>%
+            ggplot(aes_string(x = factor(0), y = input$var_name)) +
+            geom_boxplot(fill = RColorBrewer::brewer.pal(n = 3, name = "Set1")[2],
+                         na.rm = TRUE, 
+                         outlier.color = "red",
+                         outlier.fill = "red") +
+            scale_x_discrete(breaks = NULL) +
+            labs(title = paste0("Boxplot of ", input$var_name)) +
+            xlab(NULL) +
+            coord_fixed(ratio = 0.05) +
+            theme_bw() -> plot_2
+        
+        plotly::ggplotly(plot_2)
+    })
+    
 })
