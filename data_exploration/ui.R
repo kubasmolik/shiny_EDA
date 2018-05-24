@@ -59,32 +59,33 @@ shinyUI(
                     ## action button to upload the file
                     actionButton(
                         inputId = "upload", 
-                        label = "Upload file"),
+                        label = "Upload file")
+                    # ,
                     
-                    tags$hr(),
-                    
-                    tags$h2("Select variables"),
-                    
-                    ## select Y variable
-                    selectInput(
-                        inputId = "target",
-                        label = "Select target variable",
-                        choices = names(df)
-                    ),
-                    
-                    ## select X variable
-                    selectInput(
-                        inputId = "var_name",
-                        label = "Select predictor variable",
-                        choices = names(df)
-                    ),
-                    
-                    ## select predictor type
-                    radioButtons(
-                        inputId = "target_type",
-                        label = "Select target type",
-                        choices = c("binary", "numeric")
-                    )
+                    # tags$hr(),
+                    # 
+                    # tags$h2("Select variables"),
+                    # 
+                    # ## select Y variable
+                    # selectInput(
+                    #     inputId = "target",
+                    #     label = "Select target variable",
+                    #     choices = names(df)
+                    # ),
+                    # 
+                    # ## select X variable
+                    # selectInput(
+                    #     inputId = "var_name",
+                    #     label = "Select predictor variable",
+                    #     choices = names(df)
+                    # ),
+                    # 
+                    # ## select predictor type
+                    # radioButtons(
+                    #     inputId = "target_type",
+                    #     label = "Select target type",
+                    #     choices = c("binary", "numeric")
+                    # )
                     
                 ),
                 mainPanel(
@@ -103,6 +104,15 @@ shinyUI(
             sidebarLayout(
                 
                 sidebarPanel(width = 2,
+                             
+                    tags$h2("Select predictor"),
+                    
+                    ## select X variable
+                    selectInput(
+                        inputId = "var_name",
+                        label = "Select predictor variable",
+                        choices = names(df)
+                    ),
                     
                     ## logarithm the variable or not
                     checkboxInput(
@@ -136,7 +146,44 @@ shinyUI(
                         min = 10,
                         max = 50,
                         step = 1
+                    ),
+                    
+                    tags$hr(),
+                    
+                    tags$h2("Select variables"),
+                    
+                    ## select Y variable
+                    selectInput(
+                        inputId = "target",
+                        label = "Select target variable",
+                        choices = names(df)
+                    ),
+                    
+                    ## select predictor type
+                    radioButtons(
+                        inputId = "target_type",
+                        label = "Select target type",
+                        choices = c("binary", "numeric")
+                    ),
+                    
+                    conditionalPanel(
+                        condition = "input.target_type == 'numeric'",
+                        
+                        ## logarithm the target or not
+                        checkboxInput(
+                            inputId = "log_dummy_tar",
+                            label = "Log transformation",
+                            value = FALSE
+                        ),
+                        
+                        ## remove outliers from target or not
+                        checkboxInput(
+                            inputId = "outlier_dummy_tar",
+                            label = "Remove outliers",
+                            value = FALSE
+                        )
                     )
+                    
                 ),
                 
                 mainPanel(
