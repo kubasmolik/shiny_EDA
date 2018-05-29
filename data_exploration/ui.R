@@ -189,12 +189,15 @@ shinyUI(
                 
                 mainPanel(
                     
+                    ## descriptive statistics
                     fluidRow(
                         tags$h2("Descriptive statistics"),
                         
                         verbatimTextOutput("summary"),
                         tags$br()
                     ),
+                    
+                    ## histogram and boxplot
                     fluidRow(
                         tags$h2("Histogram & boxplot"),
                         
@@ -203,6 +206,8 @@ shinyUI(
                         column(width = 4,
                                plotlyOutput("box_plot"))
                     ),
+                    
+                    ## normality test
                     fluidRow(
                         tags$h2("Normality test"),
                         p(em(paste0("P-values smaller than 0.1 indicate that ",
