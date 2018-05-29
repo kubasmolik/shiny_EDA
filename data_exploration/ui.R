@@ -21,6 +21,7 @@ library(DT)
 library(shiny)
 library(markdown)
 library(DescTools)
+library(plotly)
 
 #------------------------------------------------------------------------------#
 ####                            Define UI                                   ####
@@ -201,6 +202,13 @@ shinyUI(
                                plotlyOutput("hist_plot")),
                         column(width = 4,
                                plotlyOutput("box_plot"))
+                    ),
+                    fluidRow(
+                        tags$h2("Normality test"),
+                        p(em(paste0("P-values smaller than 0.1 indicate that ",
+                                    "the variable is not normally distributed")
+                             )),
+                        verbatimTextOutput("norm_test")
                     )
                 )
                 

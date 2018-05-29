@@ -137,4 +137,12 @@ shinyServer(function(input, output, session) {
         plotly::ggplotly(plot_2)
     })
     
+    output$norm_test <- renderPrint({
+        
+        df() %>%
+            select(rlang::UQ(as.name(input$var_name))) %>%
+            .[[1]] %>%
+            nortest::lillie.test()
+    })
+    
 })
