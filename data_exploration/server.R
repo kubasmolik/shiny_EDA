@@ -79,11 +79,95 @@ shinyServer(function(input, output, session) {
                 select(- x_scaled) -> df_temp
         }
         
+        #####
+        
+        # if(input$target_type == "numeric") {
+        #     
+        #     ## calculate min to enable applying logarithm
+        #     df_base() %>%
+        #         select(rlang::UQ(as.name(input$target))) %>%
+        #         min(na.rm = T) -> min_y
+        #     
+        #     df_temp$y <- as.numeric(df_temp$y)
+        #     
+        #     ## if log_dummy_tar == T then apply logarithm
+        #     if(input$log_dummy_tar){
+        #         if(min_y <= 0){
+        #             df_temp %>%
+        #                 mutate(y = log(y + min_y + 1)) %>% 
+        #                 select(x, y) -> df_temp
+        #         } else {
+        #             df_temp %>%
+        #                 mutate(y = log(y)) %>% 
+        #                 select(x, y) -> df_temp
+        #         }
+        #     }
+        #     
+        #     ## if outlier_dummy_tar == T then remove outliers according to definition
+        #     if(input$outlier_dummy_tar){
+        #         df_temp %>%
+        #             mutate(y_scaled = as.numeric(scale(y))) %>%
+        #             filter(abs(y_scaled) <= 3) %>%
+        #             select(- y_scaled) -> df_temp
+        #     }
+        #     
+        # }
+        
+        #####
+        
         ## fix the names
         names(df_temp) <- c(input$var_name, input$target)
         
         df_temp
     })
+    
+    df_y <- reactive({
+
+        if(input$target_type == "numeric") {
+
+            ## calculate min to enable applying logarithm
+            df() %>%
+                select(rlang::UQ(as.name(input$target))) %>%
+                min(na.rm = T) -> min_y
+
+            df_temp <- df()
+
+            ## change names to simplify code
+            names(df_temp) <- c("x", "y")
+            df_temp$x <- as.numeric(df_temp$x)
+            df_temp$y <- as.numeric(df_temp$y)
+
+            ## if log_dummy_tar == T then apply logarithm
+            if(input$log_dummy_tar){
+                if(min_y <= 0){
+                    df_temp %>%
+                        mutate(y = log(y + min_y + 1)) %>%
+                        select(x, y) -> df_temp
+                } else {
+                    df_temp %>%
+                        mutate(y = log(y)) %>%
+                        select(x, y) -> df_temp
+                }
+            }
+
+            ## if outlier_dummy_tar == T then remove outliers according to definition
+            if(input$outlier_dummy_tar){
+                df_temp %>%
+                    mutate(y_scaled = as.numeric(scale(y))) %>%
+                    filter(abs(y_scaled) <= 3) %>%
+                    select(- y_scaled) -> df_temp
+            }
+
+            ## fix the names
+            names(df_temp) <- c(input$var_name, input$target)
+
+            df_temp
+        } else {
+            df()
+        }
+
+    })
+    
     
     #### OUTPUTS ####
     
@@ -143,6 +227,34 @@ shinyServer(function(input, output, session) {
             select(rlang::UQ(as.name(input$var_name))) %>%
             .[[1]] %>%
             nortest::lillie.test()
+    })
+    
+    output$scatter_plot <- renderPlotly({
+        
+        df_y() %>%
+        
+        ## define plot
+        ggplot(aes_string(x = input$var_name, y = input$target)) +
+            geom_point(fill = "black", alpha = 0.5) + 
+            geom_smooth(color = "red", fill = "darkblue") +
+            
+            ## layout
+            labs(x = paste(input$var_name),
+                 y = paste(input$target),
+                 title = paste0(input$target, " vs. ", input$var_name)) +
+            theme_bw() -> plot_2
+        
+        plotly::ggplotly(plot_2)
+    })
+    
+    output$correlation <- renderText({
+        
+        df_y() %>%
+            cor() %>%
+            .[1,2] -> cor_coef
+        
+        paste0("Correlation coefficient = ",
+               round(cor_coef, digits = 3))
     })
     
 })

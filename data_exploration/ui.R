@@ -214,6 +214,22 @@ shinyUI(
                                     "the variable is not normally distributed")
                              )),
                         verbatimTextOutput("norm_test")
+                    ),
+                    
+                    ## CONDITIONAL - scatterplot and correlation 
+                    fluidRow(
+                        tags$h2("Relation with target"),
+                        
+                        conditionalPanel(
+                            condition = "input.target_type == 'numeric'",
+                            
+                            column(width = 9,
+                                plotlyOutput("scatter_plot")
+                            ),
+                            column(width = 1,
+                                tags$h4(textOutput("correlation"))
+                            )
+                        )
                     )
                 )
                 
