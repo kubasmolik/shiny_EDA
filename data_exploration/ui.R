@@ -105,6 +105,8 @@ shinyUI(
             sidebarLayout(
                 
                 sidebarPanel(width = 2,
+                    
+                    style = "position:fixed;width:inherit;",
                              
                     tags$h2("Select predictor"),
                     
@@ -191,43 +193,80 @@ shinyUI(
                     
                     ## descriptive statistics
                     fluidRow(
-                        tags$h2("Descriptive statistics"),
+                        column(width = 12,
+                               tags$h2("Descriptive statistics"),
                         
-                        verbatimTextOutput("summary"),
-                        tags$br()
+                               verbatimTextOutput("summary"),
+                               tags$br()
+                        )
                     ),
                     
                     ## histogram and boxplot
                     fluidRow(
-                        tags$h2("Histogram & boxplot"),
                         
-                        column(width = 6, 
+                        column(width = 7, 
+                               tags$h2("Histogram & boxplot"),
                                plotlyOutput("hist_plot")),
-                        column(width = 4,
+                        column(width = 5,
                                plotlyOutput("box_plot"))
                     ),
                     
                     ## normality test
                     fluidRow(
-                        tags$h2("Normality test"),
-                        p(em(paste0("P-values smaller than 0.1 indicate that ",
+                        
+                        column(width = 12,
+                            tags$h2("Normality test"),
+                            p(em(paste0("P-values smaller than 0.1 indicate that ",
                                     "the variable is not normally distributed")
-                             )),
-                        verbatimTextOutput("norm_test")
+                                )),
+                            verbatimTextOutput("norm_test")
+                        )
+                        
                     ),
                     
-                    ## CONDITIONAL - scatterplot and correlation 
+                    ## CONDITIONAL 
                     fluidRow(
-                        tags$h2("Relation with target"),
+                        # tags$h2("Relation with target"),
                         
+                        ## target numeric - scatterplot and correlation
                         conditionalPanel(
                             condition = "input.target_type == 'numeric'",
                             
-                            column(width = 9,
+                            column(width = 10,
+                                   tags$h2("Relation with target"),
                                 plotlyOutput("scatter_plot")
                             ),
-                            column(width = 1,
+                            column(width = 2,
                                 tags$h4(textOutput("correlation"))
+                            )
+                        ),
+                        
+                        ## target factor
+                        conditionalPanel(
+                            condition = "input.target_type == 'binary'",
+                            
+                            column(width = 7,
+                                   tags$h2("Relation with target"),
+                                plotlyOutput("dens_plot")
+                            ),
+                            column(width = 5,
+                                plotlyOutput("box_plot_2")
+                            )
+                        )
+                    ),
+                    
+                    ## CONDITIONAL 2
+                    fluidRow(
+                        conditionalPanel(
+                            condition = "input.target_type == 'binary'",
+                            
+                            column(width = 6,
+                                   tags$h3("T test for means"),
+                                   verbatimTextOutput("t_test")
+                            ),
+                            column(width = 6,
+                                   tags$h3("Wilcoxon test for means"),
+                                   verbatimTextOutput("wilcoxon_test")
                             )
                         )
                     )

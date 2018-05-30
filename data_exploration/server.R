@@ -123,6 +123,11 @@ shinyServer(function(input, output, session) {
     
     df_y <- reactive({
 
+        df() %>%
+            select(rlang::UQ(as.name(input$target))) %>%
+            .[[1]] %>%
+            class() -> target_class
+        
         if(input$target_type == "numeric") {
 
             ## calculate min to enable applying logarithm
@@ -163,7 +168,17 @@ shinyServer(function(input, output, session) {
 
             df_temp
         } else {
-            df()
+            if(target_class != "factor") {
+                
+                df_temp <- df()
+                
+                names(df_temp)[2] <- "y"
+                
+                df_temp %>% 
+                    mutate(y = as.factor(y)) -> df_temp
+                names(df_temp)[2] <- input$target
+                df_temp
+            }
         }
 
     })
@@ -256,5 +271,92 @@ shinyServer(function(input, output, session) {
         paste0("Correlation coefficient = ",
                round(cor_coef, digits = 3))
     })
+    
+    output$dens_plot <- renderPlotly({
+        
+        df_y() %>% 
+            select(rlang::UQ(as.name(input$var_name))) %>%
+            unique() %>% 
+            dim () %>%
+            .[1] -> n_val
+        
+        if(n_val == 2) {
+            color_palette <- RColorBrewer::brewer.pal(n = 3, name = "Set1")[2:1]
+        } else {
+            color_palette <- RColorBrewer::brewer.pal(n = 3, name = "Set1")[1:n_val]
+        }
+        
+        df_y() %>% 
+            ggplot(aes_string(x = input$var_name, fill = input$target)) +
+            # geom_density(alpha = 0.5, size = 1) +
+            geom_density(alpha = 0.5) +
+            
+            ## layout
+            scale_fill_manual(
+                name = paste0("Levels of ", input$target),
+                values = color_palette
+            ) +
+            labs(x = paste(input$var_name),
+                 y = "Density",
+                 title = "Conditional densities comparison"
+            ) + 
+            scale_y_continuous(labels = scales::comma) + 
+            theme_bw() +
+            theme(legend.position = "bottom") -> plot_3
+        
+        plotly::ggplotly(plot_3)
+    })
+    
+    output$box_plot_2 <- renderPlotly({
+        
+        df_y() %>% 
+            select(rlang::UQ(as.name(input$var_name))) %>%
+            unique() %>% 
+            dim () %>%
+            .[1] -> n_val
+        
+        if(n_val == 2) {
+            color_palette <- RColorBrewer::brewer.pal(n = 3, name = "Set1")[2:1]
+        } else {
+            color_palette <- RColorBrewer::brewer.pal(n = 3, name = "Set1")[1:n_val]
+        }
+        
+        df_y() %>%
+            ggplot(aes_string(y = input$var_name, x = input$target, 
+                              fill = input$target)) +
+            geom_boxplot() +
+            
+            ## layout
+            scale_fill_manual(
+                name = paste0("Levels of ", input$target),
+                values = color_palette
+            ) +
+            labs(x = paste(input$target),
+                 y = paste(input$var_name),
+                 title = paste0(input$target, " vs. ", input$var_name)
+            ) + 
+            scale_y_continuous(labels = scales::comma) + 
+            theme_bw() +
+            theme(legend.position = "bottom") -> plot_4
+        
+        plotly::ggplotly(plot_4)
+    })
+    
+    output$t_test <- renderPrint({
+        
+        t.test(
+            as.formula(paste(input$var_name, " ~ ", input$target)), 
+            data = df_y())
+    })
+    
+    output$wilcoxon_test <- renderPrint({
+        
+        wilcox.test(
+            as.formula(paste(input$var_name, " ~ ", input$target)), 
+            data = df_y())
+    })
+    
+    
+    
     
 })
