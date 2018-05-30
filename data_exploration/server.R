@@ -250,7 +250,7 @@ shinyServer(function(input, output, session) {
     output$correlation <- renderText({
         
         df_y() %>%
-            cor() %>%
+            cor(use = "complete.obs") %>%
             .[1,2] -> cor_coef
         
         paste0("Correlation coefficient = ",
